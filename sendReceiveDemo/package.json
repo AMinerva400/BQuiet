@@ -1,0 +1,21 @@
+{
+  "name": "chatserver1",
+  "version": "1.0.0",
+  "description": "SeniorDesign - RuferMinerva - BQuiet",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Node",
+    "Mongoos",
+    "MongoDB"
+  ],
+  "author": "Alex Rufer",
+  "license": "ISC",
+  "dependencies": {
+    "moment": "^2.24.0",
+    "mongodb": "^3.1.13",
+    "mongoose": "^5.4.15"
+  }
+}
