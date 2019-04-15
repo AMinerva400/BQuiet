@@ -24,7 +24,7 @@ import javax.crypto.spec.SecretKeySpec;
             byte[] encodedKey = Base64.getDecoder().decode("4xK23JJqwAyyA36M0pdiBw==");
             secretKey = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
          }catch(Exception exc){
-             Log.e("ERROR", exc.toString());
+             Log.e("STITCH", exc.toString());
          }
      }
 
@@ -35,7 +35,7 @@ import javax.crypto.spec.SecretKeySpec;
              return Base64.getEncoder().encodeToString(encryptedField);
          }
          catch(Exception e){
-             Log.e("ERROR", e.toString());
+             Log.e("STITCH", e.toString());
              return plainField;
          }
      }
@@ -45,10 +45,10 @@ import javax.crypto.spec.SecretKeySpec;
          {
              dcipher.init(Cipher.DECRYPT_MODE, secretKey);
              byte[] plainField = dcipher.doFinal(Base64.getDecoder().decode(encryptedField));
-             return plainField.toString();
+             return new String(plainField);
          }
          catch(Exception e){
-             Log.e("ERROR", e.toString());
+             Log.e("STITCH", "DECRYPT FAILED: " + e.toString());
              return encryptedField;
          }
      }
