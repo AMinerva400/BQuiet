@@ -52,6 +52,8 @@ public class InboxService extends Service {
                 Log.v("STITCH", "Login Successful");
             }
         });
+        Security sec = new Security();
+        Log.v("STITCH", "TESTING: " + sec.decrypt(sec.encrypt("HELLO ANTHONY")));
         return START_STICKY;
     }
 
@@ -72,7 +74,7 @@ public class InboxService extends Service {
                     Log.v("STITCH", "Message Received!");
                     Gson gson = new Gson();
                     Security decrypter = new Security();
-                    ArrayList cUsers = gson.fromJson(doc.get("convoUsers").toString(), ArrayList.class);
+                    ArrayList cUsers = gson.fromJson(decrypter.decrypt(doc.get("convoUsers").toString()), ArrayList.class);
                     Log.v("STITCH", cUsers.toString());
                     for(Object obj : cUsers){
                         User u = gson.fromJson(obj.toString(), User.class);
@@ -82,11 +84,10 @@ public class InboxService extends Service {
                         }
                     }
                     Log.v("STITCH", "Reached this line");
-                    Conversation c = gson.fromJson(doc.get("convo").toString(), Conversation.class);
+                    Conversation c = gson.fromJson(decrypter.decrypt(doc.get("convo").toString()), Conversation.class);
                     Log.v("STITCH", "Convo Found! " + c.getGroupName());
                     myDatabase.addConversation(c);
-                    Message m = gson.fromJson(doc.get("message").toString(), Message.class);
-                    m.setMessage(decrypter.decrypt(m.getMessage()));
+                    Message m = gson.fromJson(decrypter.decrypt(doc.get("message").toString()), Message.class);
                     Log.v("STITCH", "Convo Found! " + m.getMessage());
                     Log.v("STITCH", "Reached this line");
                     myDatabase.addMessage(m);

@@ -64,12 +64,10 @@ public class MessageSender {
             convoUsers.add(gson.toJson(user));
         }
         Security encrypter = new Security();
-        Message newMsg = message;
-        newMsg.setMessage(encrypter.encrypt(newMsg.getMessage()));
         Document msg = new Document("sendTo", receiver.getUserID())
-                .append("convoUsers", gson.toJson(convoUsers))
-                .append("convo", gson.toJson(c))
-                .append("message", gson.toJson(newMsg));
+                .append("convoUsers", encrypter.encrypt(gson.toJson(convoUsers)))
+                .append("convo", encrypter.encrypt(gson.toJson(c)))
+                .append("message", encrypter.encrypt(gson.toJson(message)));
         Log.v("STITCH", "Message Sent");
         Task<RemoteInsertOneResult> insertTask = BQcollection.insertOne(msg);
         insertTask.addOnCompleteListener(new OnCompleteListener<RemoteInsertOneResult>() {

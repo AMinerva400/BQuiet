@@ -22,7 +22,7 @@ public class Security {
             ecipher = Cipher.getInstance(encryptionType);
             dcipher = Cipher.getInstance(encryptionType);
             byte[] encodedKey = Base64.decode("4xK23JJqwAyyA36M0pdiBw==", Base64.DEFAULT);
-            secretKey = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
+            secretKey = new SecretKeySpec(encodedKey, 0, encodedKey.length, encryptionType);
         }catch(Exception exc){
             Log.e("ERROR", exc.toString());
         }
@@ -35,7 +35,8 @@ public class Security {
             return encryptedField.toString();
         }
         catch(Exception e){
-            Log.e("ERROR", e.toString());
+            Log.e("STITCH", e.toString());
+            return plainField;
         }
     }
 
@@ -46,7 +47,8 @@ public class Security {
             return plainField.toString();
         }
         catch(Exception e){
-            Log.e("ERROR", e.toString());
+            Log.e("STITCH", e.toString());
+            return encryptedField;
         }
     }
 }
