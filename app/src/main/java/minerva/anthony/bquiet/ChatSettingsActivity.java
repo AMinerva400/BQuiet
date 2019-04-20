@@ -74,9 +74,7 @@ public class ChatSettingsActivity extends AppCompatActivity
                 Message m = new Message("New Expiration Status: " + text, new User("ALERT", "ALERT_EXPIRE"), System.currentTimeMillis(), CID);
                 for(String user : convo.getReceivers().split(" ")){
                     User u = mDatabase.getUser(user);
-                    if(!user.equals(UID)){
-                        mSender.sendExpirationAlert(m, u, expireTime);
-                    }
+                    mSender.sendExpirationAlert(m, u, expireTime);
                 }
                 //TODO: Start Service for THIS User -> Handle Starting Service for other Users in InboxService
             }
