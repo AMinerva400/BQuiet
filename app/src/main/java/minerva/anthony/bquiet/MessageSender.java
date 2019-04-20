@@ -48,6 +48,43 @@ public class MessageSender {
         this.senderName = senderName;
     }
 
+    public void sendExpirationAlert(Message message, User receiver, long expirationTime) {
+        mongo = stitchClient.getServiceClient(RemoteMongoClient.factory, "mongodb-atlas");
+        BQcollection = mongo.getDatabase("UserMessages").getCollection("Message");
+        Conversation c = myDatabase.getConversation(message.conversationID);
+        Gson gson = new Gson();
+        ArrayList<String> convoUsers = new ArrayList<>();
+        for(String u : c.getReceivers().split(" ")){
+            User user;
+            if(myDatabase.getUser(u) == null){
+                user = new User(senderName, u);
+            }else {
+                user = myDatabase.getUser(u);
+            }
+            convoUsers.add(gson.toJson(user));
+        }
+        Security encrypter = new Security();
+        Document msg = new Document("sendTo", receiver.getUserID())
+                .append("convoUsers", encrypter.encrypt(gson.toJson(convoUsers)))
+                .append("convo", encrypter.encrypt(gson.toJson(c)))
+                .append("message", encrypter.encrypt(gson.toJson(message)));
+        if(message.getSender().getUserID().equals("ALERT_EXPIRE")){
+            msg.append("expireTime", expirationTime);
+        }
+        Log.v("STITCH", "Message Sent");
+        Task<RemoteInsertOneResult> insertTask = BQcollection.insertOne(msg);
+        insertTask.addOnCompleteListener(new OnCompleteListener<RemoteInsertOneResult>() {
+            @Override
+            public void onComplete(@NonNull Task<RemoteInsertOneResult> task) {
+                if(task.isSuccessful()){
+                    Log.v("STITCH", "Insert Successful");
+                }else{
+                    Log.v("STITCH", "Failed to insert: " + task.getException());
+                }
+            }
+        });
+    }
+
     public void send(Message message, User receiver) {
         mongo = stitchClient.getServiceClient(RemoteMongoClient.factory, "mongodb-atlas");
         BQcollection = mongo.getDatabase("UserMessages").getCollection("Message");

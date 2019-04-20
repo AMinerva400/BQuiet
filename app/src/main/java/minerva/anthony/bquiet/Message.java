@@ -1,5 +1,6 @@
 package minerva.anthony.bquiet;
 
+import java.sql.Date;
 import java.util.UUID;
 
 import androidx.annotation.NonNull;
@@ -72,15 +73,4 @@ public class Message {
     long getCreatedAt(){
         return createdAt;
     }
-
-    public void encrypt() {
-        Security sec = new Security();
-        message = sec.encrypt(message);
-    }
-
-    public void decrypt() {
-        Security sec = new Security();
-        message = sec.decrypt(message);
-    }
-
 }

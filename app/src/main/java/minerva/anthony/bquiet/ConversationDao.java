@@ -10,7 +10,7 @@ import androidx.room.Query;
 
 @Dao
 public interface ConversationDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insertConversation(Conversation c);
 
     @Query("SELECT * FROM Conversation")

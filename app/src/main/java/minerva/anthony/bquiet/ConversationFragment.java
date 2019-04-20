@@ -14,8 +14,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Spinner;
 
 import java.util.ArrayList;
@@ -26,7 +29,8 @@ public class ConversationFragment extends DialogFragment {
 
     private static List<User> contacts = new ArrayList<>();
     private static User user;
-    private Spinner spinner;
+    private ListView lvUsers;
+    ArrayList<User> users = new ArrayList<>();
 
     public interface ConversationListener {
         void addConversation(Conversation c);
@@ -62,24 +66,54 @@ public class ConversationFragment extends DialogFragment {
         etName.requestFocus();
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         //TODO: Populate Spinner from contacts
-        UserAdapter uAdapter = new UserAdapter(getContext(), contacts);
-        uAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner = getView().findViewById(R.id.spnUsers);
-        spinner.setAdapter(uAdapter);
+        //UserAdapter uAdapter = new UserAdapter(getContext(), contacts);
+        //uAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        lvUsers = view.findViewById(R.id.lvUsers);
+        List<ListViewItem> initItemList = this.getInitListViewItems();
+        UserAdapter cbAdapter = new UserAdapter(getContext(), initItemList);
+        //cbAdapter.notifyDataSetChanged();
+        lvUsers.setAdapter(cbAdapter);
+        lvUsers.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int itemIndex, long l) {
+                ListViewItem item = (ListViewItem)adapterView.getAdapter().getItem(itemIndex);
+                CheckBox itemCheckbox = view.findViewById(R.id.list_view_item_checkbox);
+                if(item.isChecked())
+                {
+                    itemCheckbox.setChecked(false);
+                    item.setChecked(false);
+                    users.remove(item.getUser());
+                }else
+                {
+                    itemCheckbox.setChecked(true);
+                    item.setChecked(true);
+                    users.add(item.getUser());
+                }
+            }
+        });
+
         Button btnSave = getView().findViewById(R.id.btnSave);
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ConversationListener mListener = (ConversationListener) getActivity();
-                //TODO: Create User from View Data
-                User u = (User) spinner.getSelectedItem();
-                ArrayList<User> users = new ArrayList<>();
-                users.add(u);
                 users.add(user);
                 Conversation c = new Conversation(etName.getText().toString(), users);
                 mListener.addConversation(c);
                 dismiss();
             }
         });
+    }
+
+    private List<ListViewItem> getInitListViewItems(){
+        List<ListViewItem> items = new ArrayList<>();
+        for(User u : contacts){
+            ListViewItem item = new ListViewItem();
+            item.setChecked(false);
+            item.setUser(u);
+            item.setItemText(u.name);
+            items.add(item);
+        }
+        return items;
     }
 }

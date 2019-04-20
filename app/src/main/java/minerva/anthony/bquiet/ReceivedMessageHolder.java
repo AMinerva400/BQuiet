@@ -1,6 +1,7 @@
 package minerva.anthony.bquiet;
 
 import android.content.Context;
+import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -8,8 +9,10 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.Date;
+
 public class ReceivedMessageHolder extends RecyclerView.ViewHolder {
-    TextView messageText, timeText, nameText;
+    private TextView messageText, timeText, nameText;
     //ImageView profileImage;
 
     ReceivedMessageHolder(View itemView) {
@@ -24,7 +27,8 @@ public class ReceivedMessageHolder extends RecyclerView.ViewHolder {
         messageText.setText(message.getMessage());
 
         // Format the stored timestamp into a readable String using method.
-        timeText.setText(DateUtils.formatDateTime(context, message.getCreatedAt(), 0));
+        Date utilDate = new Date(message.getCreatedAt());
+        timeText.setText(DateFormat.getTimeFormat(context).format(utilDate));
         nameText.setText(message.getSender().getName());
 
         // Insert the profile image from the URL into the ImageView.

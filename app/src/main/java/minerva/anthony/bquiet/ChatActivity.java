@@ -63,7 +63,7 @@ public class ChatActivity extends AppCompatActivity
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Message m = new Message(etChat.getText().toString(), new User(Name, UID), new Date().getTime(), CID);
+                Message m = new Message(etChat.getText().toString(), new User(Name, UID), System.currentTimeMillis(), CID);
                 mDatabase.addMessage(m);
                 dataSet.add(m);
                 mMessageAdapter.notifyDataSetChanged();

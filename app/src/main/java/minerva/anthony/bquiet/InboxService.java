@@ -91,6 +91,10 @@ public class InboxService extends Service {
                     Log.v("STITCH", "Convo Found! " + m.getMessage());
                     Log.v("STITCH", "Reached this line");
                     myDatabase.addMessage(m);
+                    if(m.getSender().UserID.equals("ALERT_EXPIRE")){
+                        //TODO: Create/Start a Service to Constantly Call This, Possibly Use SharedPreferences
+                        myDatabase.expireMessages(System.currentTimeMillis(), (long)doc.get("expireTime"));
+                    }
                     //TODO: Notification to User
                 });
                 BQcollection.deleteMany(filterDoc);

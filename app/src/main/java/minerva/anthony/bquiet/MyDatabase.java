@@ -185,6 +185,21 @@ public class MyDatabase {
         }
     }
 
+    void expireMessages(long currentTime, long expirationTime){
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                messagesDatabase.messageDao().expireMessages(currentTime, expirationTime);
+            }
+        });
+        try{
+            t.start();
+            t.join();
+        } catch(Exception e){
+            Log.e("MyDatabase", "Error Joining " + e);
+        }
+    }
+
     void deleteMessage(final Message m){
         Thread t = new Thread(new Runnable() {
             @Override

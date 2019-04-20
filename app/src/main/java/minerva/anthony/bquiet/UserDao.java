@@ -9,7 +9,7 @@ import androidx.room.Query;
 
 @Dao
 public interface UserDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insertUser(User u);
 
     @Query("SELECT * FROM User")

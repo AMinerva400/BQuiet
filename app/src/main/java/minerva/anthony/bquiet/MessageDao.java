@@ -10,7 +10,7 @@ import androidx.room.Query;
 
 @Dao
 public interface MessageDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insertMessage(Message m);
 
     @Query("SELECT * FROM Message WHERE Message.conversationID = :CID")
@@ -18,4 +18,7 @@ public interface MessageDao {
 
     @Delete
     void deleteMessage(Message m);
+
+    @Query("DELETE FROM Message WHERE :millis - Message.createdAt >= :time")
+    void expireMessages(long millis, long time);
 }
