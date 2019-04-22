@@ -16,6 +16,7 @@ import com.mongodb.stitch.core.auth.providers.anonymous.AnonymousCredential;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.Log;
 import android.view.View;
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity
     ConversationAdapter conversationAdapter;
     ListView lvConversations;
     MyDatabase mDatabase;
+    SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +65,13 @@ public class MainActivity extends AppCompatActivity
         setUID(getApplicationContext(), getSupportFragmentManager());
         startInbox();
         FloatingActionButton fab = findViewById(R.id.fab);
+        swipeRefreshLayout = findViewById(R.id.swipeRefresh);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                conversationAdapter.notifyDataSetChanged();
+            }
+        });
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

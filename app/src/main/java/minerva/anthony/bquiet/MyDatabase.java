@@ -185,11 +185,11 @@ public class MyDatabase {
         }
     }
 
-    void expireMessages(long currentTime, long expirationTime){
+    void expireMessages(String CID, long currentTime, long expirationTime){
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                messagesDatabase.messageDao().expireMessages(currentTime, expirationTime);
+                messagesDatabase.messageDao().expireMessages(CID, currentTime, expirationTime);
             }
         });
         try{

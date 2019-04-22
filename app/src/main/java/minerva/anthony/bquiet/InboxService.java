@@ -1,7 +1,11 @@
 package minerva.anthony.bquiet;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -24,12 +28,15 @@ import org.bson.Document;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 public class InboxService extends Service {
 
@@ -37,8 +44,8 @@ public class InboxService extends Service {
     StitchAppClient stitchClient;
     RemoteMongoClient mongo;
     RemoteMongoCollection<Document> BQcollection;
-    RemoteFindIterable<Document> messages;
     MyDatabase myDatabase;
+    private static final String CHANNEL_ID = "BQUIET_CHANNEL ";
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -66,7 +73,6 @@ public class InboxService extends Service {
                 Document filterDoc = new Document().append("sendTo", userID);
                 mongo = stitchClient.getServiceClient(RemoteMongoClient.factory, "mongodb-atlas");
                 BQcollection = mongo.getDatabase("UserMessages").getCollection("Message");
-                //messages = BQcollection.find(filterDoc);
                 Log.v("STITCH", "Running Inbox Loop");
                 RemoteFindIterable findResults = BQcollection.find(filterDoc);
                 findResults.forEach(item -> {
@@ -92,36 +98,54 @@ public class InboxService extends Service {
                     Log.v("STITCH", "Reached this line");
                     myDatabase.addMessage(m);
                     if(m.getSender().UserID.equals("ALERT_EXPIRE")){
-                        //TODO: Create/Start a Service to Constantly Call This, Possibly Use SharedPreferences
-                        myDatabase.expireMessages(System.currentTimeMillis(), (long)doc.get("expireTime"));
-                    }
-                    //TODO: Notification to User
-                });
-                BQcollection.deleteMany(filterDoc);
-
-                /*messages.forEach(new Block<Document>() {
-                    @Override
-                    public void apply(Document item) {
-                        Log.v("STITCH", "Message Received!");
-                        ArrayList<User> cUsers = (ArrayList<User>) item.get("convoUsers");
-                        if(cUsers != null){
-                            for(User u : cUsers){
-                                if(!u.getUserID().equals(userID)){
-                                    myDatabase.addContact(u);
-                                }
+                        TimerTask task = new TimerTask() {
+                            @Override
+                            public void run() {
+                                Intent i = new Intent(getApplicationContext(), MessageExpirationService.class);
+                                i.putExtra("EXPIRE_TIME", (long)doc.get("expireTime"));
+                                i.putExtra("CID", m.conversationID);
+                                startService(i);
+                                Log.v("STITCH", "Starting Expire Service");
                             }
-                        }
-                        myDatabase.addConversation((Conversation) item.get("convo"));
-                        myDatabase.addMessage((Message) item.get("message"));
-                        //TODO: Notification to User!
-                        // delete the message received
-                        BQcollection.deleteOne(item);
+                        };
+                        (new Timer()).schedule(task, 5000, 20000);
                     }
-                });*/
+                    createNotificationChannel();
+                    Intent i = new Intent(getApplicationContext(), ChatActivity.class);
+                    i.putExtra("rID", c.getReceivers());
+                    i.putExtra("CID", c.getCID());
+                    PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, i, 0);
+                    NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
+                            .setSmallIcon(R.drawable.ic_stat_name)
+                            .setContentTitle("Message Received!")
+                            .setContentText(m.getSender().getName() + ": " + m.getMessage())
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                            .setContentIntent(pendingIntent)
+                            .setAutoCancel(true);
+                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
+                    notificationManager.notify((new Random()).nextInt(), builder.build());
+                    //https://developer.android.com/training/notify-user/build-notification
+                });
             }
         };
         //Starts after 5 sec and will repeat on every 5 sec of time interval.
         (new Timer()).schedule(doAsynchronousTask, 5000,5000);
+    }
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "BQuiet";
+            String description = "BQuiet Channel";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
     }
 
     @Nullable

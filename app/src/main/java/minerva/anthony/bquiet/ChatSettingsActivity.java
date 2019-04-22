@@ -76,7 +76,6 @@ public class ChatSettingsActivity extends AppCompatActivity
                     User u = mDatabase.getUser(user);
                     mSender.sendExpirationAlert(m, u, expireTime);
                 }
-                //TODO: Start Service for THIS User -> Handle Starting Service for other Users in InboxService
             }
         });
     }
