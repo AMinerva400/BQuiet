@@ -17,7 +17,8 @@
         android:roundIcon="@mipmap/bq_icon_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ContactsActivity"></activity>
+
+        <activity android:name=".ContactsActivity" />
         <activity android:name=".ChatSettingsActivity" />
         <activity android:name=".ChatActivity" />
         <activity android:name=".QRCodeScanner" />
@@ -31,7 +32,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".InboxService"/>
+
+        <service android:name=".InboxService" />
+        <service android:name=".MessageExpirationService" />
     </application>
 
 </manifest>

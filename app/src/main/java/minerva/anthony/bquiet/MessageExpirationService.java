@@ -1,22 +1,37 @@
 package minerva.anthony.bquiet;
 
-import android.app.IntentService;
+import android.app.Service;
 import android.content.Intent;
+import android.os.IBinder;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-public class MessageExpirationService extends IntentService {
-    public MessageExpirationService(String name) {
-        super(name);
+public class MessageExpirationService extends Service {
+
+    long expireTime;
+    String CID = "";
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.v("EXPIRE", "MESSAGE_EXPIRATION STARTING");
+        if(intent != null){
+            expireTime = intent.getLongExtra("EXPIRE_TIME", -1);
+            CID = intent.getStringExtra("CID");
+        }
+        return START_STICKY;
     }
 
     @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
+    public void onCreate() {
+        super.onCreate();
         MyDatabase mDatabase = new MyDatabase(getApplicationContext());
-        long expireTime = intent!=null?intent.getLongExtra("EXPIRE_TIME", -1):-1;
-        String CID = intent!=null?intent.getStringExtra("CID"):"";
-        if(expireTime != -1){
-            mDatabase.expireMessages(CID, System.currentTimeMillis(), expireTime);
-        }
+        mDatabase.expireMessages(CID, System.currentTimeMillis(), expireTime);
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 }

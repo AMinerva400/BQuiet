@@ -42,8 +42,6 @@ dependencies {
     annotationProcessor "android.arch.persistence.room:compiler:$roomVersion"
     implementation 'org.jetbrains:annotations-java5:15.0'
     implementation 'org.jetbrains:annotations-java5:15.0'
-    //implementation 'org.mongodb:mongodb-driver-sync:3.7.1'
-    //implementation files('libs/mongo-java-driver-3.4.0-SNAPSHOT.jar')
     implementation 'org.mongodb:stitch-android-sdk:4.2.1'
     implementation 'com.google.code.gson:gson:2.8.5'
 }

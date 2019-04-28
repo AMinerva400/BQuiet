@@ -98,17 +98,15 @@ public class InboxService extends Service {
                     Log.v("STITCH", "Reached this line");
                     myDatabase.addMessage(m);
                     if(m.getSender().UserID.equals("ALERT_EXPIRE")){
-                        TimerTask task = new TimerTask() {
-                            @Override
-                            public void run() {
-                                Intent i = new Intent(getApplicationContext(), MessageExpirationService.class);
-                                i.putExtra("EXPIRE_TIME", (long)doc.get("expireTime"));
-                                i.putExtra("CID", m.conversationID);
-                                startService(i);
-                                Log.v("STITCH", "Starting Expire Service");
-                            }
-                        };
-                        (new Timer()).schedule(task, 5000, 20000);
+
+                        Intent i = new Intent(getApplicationContext(), MessageExpirationService.class);
+                        i.putExtra("EXPIRE_TIME", (long)doc.get("expireTime"));
+                        i.putExtra("CID", m.conversationID);
+                        stopService(i);
+                        if((long)doc.get("expireTime") != -1){
+                            startService(i);
+                        }
+                        Log.v("STITCH", "Starting Expire Service");
                     }
                     createNotificationChannel();
                     Intent i = new Intent(getApplicationContext(), ChatActivity.class);
