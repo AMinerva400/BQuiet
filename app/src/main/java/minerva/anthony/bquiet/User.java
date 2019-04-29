@@ -45,4 +45,6 @@ public class User {
     String getUserID(){
         return UserID;
     }
+
+    String getPublicKey() { return pubKey; }
 }
