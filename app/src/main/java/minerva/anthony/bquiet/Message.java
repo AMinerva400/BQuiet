@@ -75,7 +75,7 @@ public class Message {
 
     public void encrypt() {
         Security sec = new Security();
-        message = sec.encrypt(message);
+        message = sec.encrypt(message, receiverKey);
     }
 
     public void decrypt() {

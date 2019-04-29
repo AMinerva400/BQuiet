@@ -2,42 +2,40 @@ package minerva.anthony.bquiet;
 
 import android.util.Log;
 
-import java.security.Key;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 
 import java.util.Base64;
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
-public class Security {
-    private static SecretKey secretKey;
-    private static Cipher ecipher;
-    private static Cipher dcipher;
-
-    protected String encryptionType = "AES/ECB/PKCS5Padding";
+import java.security.spec.X509EncodedKeySpec;
+import java.security.KeyFactory;
 
     public class Security {
-        private static SecretKey secretKey;
         private static Cipher ecipher;
         private static Cipher dcipher;
+        private static PrivateKey privKey;
 
-        protected String encryptionType = "AES/ECB/PKCS5Padding";
+        protected String encryptionType = "RSA";
 
         public Security() {
             try{
                 ecipher = Cipher.getInstance(encryptionType);
                 dcipher = Cipher.getInstance(encryptionType);
-                byte[] encodedKey = Base64.getDecoder().decode("4xK23JJqwAyyA36M0pdiBw==");
-                secretKey = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
             }catch(Exception exc){
                 Log.e("ERROR", exc.toString());
             }
         }
 
-        public String encrypt(String plainField) {
+        public String encrypt(String plainField, String pubKey) {
             try{
-                ecipher.init(Cipher.ENCRYPT_MODE, secretKey);
+                byte[] decodedKey = Base64.getDecoder().decode(pubKey);
+                X509EncodedKeySpec spec = new X509EncodedKeySpec(decodedKey);
+                KeyFactory factory = KeyFactory.getInstance("RSA");
+                PublicKey key = factory.generatePublic(spec);
+
+                ecipher.init(Cipher.ENCRYPT_MODE, key);
                 byte[] encryptedField = ecipher.doFinal(plainField.getBytes());
                 return Base64.getEncoder().encodeToString(encryptedField);
             }
@@ -49,12 +47,21 @@ public class Security {
         public String decrypt(String encryptedField) {
             try
             {
-                dcipher.init(Cipher.DECRYPT_MODE, secretKey);
+                dcipher.init(Cipher.DECRYPT_MODE, privKey);
                 byte[] plainField = dcipher.doFinal(Base64.getDecoder().decode(encryptedField));
                 return plainField.toString();
             }
             catch(Exception e){
                 Log.e("ERROR", e.toString());
             }
+        }
+
+        public static String keyGenerator()
+        {
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+            kpg.initialize(512);
+            KeyPair kpair = kpg.generateKeyPair();
+            privKey = kpair.getPrivate();
+            return Base64.getEncoder().encodeToString(kpair.getPublic().getEncoded());
         }
     }
