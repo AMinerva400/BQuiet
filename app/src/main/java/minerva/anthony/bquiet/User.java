@@ -14,6 +14,8 @@ public class User {
     String name;
     @ColumnInfo @PrimaryKey @NonNull
     String UserID;
+    @ColumnInfo
+    String pubKey;
 
     public void setName(String name) {
         this.name = name;
@@ -29,6 +31,7 @@ public class User {
     public User(String n){
         name = n;
         UserID = UUID.randomUUID().toString();
+        pubKey = Security.keyGenerator();
     }
 
     public User(String n, String UID){
@@ -43,4 +46,6 @@ public class User {
     String getUserID(){
         return UserID;
     }
+
+    String getPublicKey() { return pubKey; }
 }
