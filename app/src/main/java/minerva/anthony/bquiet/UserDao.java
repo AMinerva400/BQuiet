@@ -17,4 +17,7 @@ public interface UserDao {
 
     @Query("SELECT * FROM User WHERE User.UserID = :UID")
     User getUser(String UID);
+
+    @Query("DELETE FROM User WHERE User.UserID = :CODE OR User.name = :CODE")
+    void cleanUsers(String CODE);
 }

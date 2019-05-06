@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity
     public void addConversation(Conversation c) {
         mDatabase.addConversation(c);
         dataSet.add(c);
+        Log.v("CONVO", "Data Set Changed: " + c.toString());
         conversationAdapter.notifyDataSetChanged();
     }
 
@@ -65,13 +66,6 @@ public class MainActivity extends AppCompatActivity
         setUID(getApplicationContext(), getSupportFragmentManager());
         startInbox();
         FloatingActionButton fab = findViewById(R.id.fab);
-        swipeRefreshLayout = findViewById(R.id.swipeRefresh);
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                conversationAdapter.notifyDataSetChanged();
-            }
-        });
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -88,6 +82,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
         mDatabase = new MyDatabase(getApplicationContext());
+        mDatabase.cleanUsers("ERROR");
         dataSet = mDatabase.getConversations();
         conversationAdapter = new ConversationAdapter(this, dataSet, UID);
         lvConversations = findViewById(R.id.lvConversationsList);
@@ -99,6 +94,13 @@ public class MainActivity extends AppCompatActivity
                 i.putExtra("rID", dataSet.get(position).getReceivers());
                 i.putExtra("CID", dataSet.get(position).getCID());
                 startActivity(i);
+            }
+        });
+        swipeRefreshLayout = findViewById(R.id.swipeRefresh);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                conversationAdapter.notifyDataSetChanged();
             }
         });
     }

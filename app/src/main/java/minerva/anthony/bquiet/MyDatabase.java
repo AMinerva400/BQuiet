@@ -170,6 +170,21 @@ public class MyDatabase {
         return messageTemp;
     }
 
+    void cleanUsers(final String CODE){
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                contactsDatabase.userDao().cleanUsers(CODE);
+            }
+        });
+        try{
+            t.start();
+            t.join();
+        } catch(Exception e){
+            Log.e("MyDatabase", "Error Joining " + e);
+        }
+    }
+
     void deleteConversation(final Conversation c){
         Thread t = new Thread(new Runnable() {
             @Override

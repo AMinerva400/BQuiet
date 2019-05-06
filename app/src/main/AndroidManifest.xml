@@ -12,9 +12,9 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/bq_icon"
+        android:icon="@mipmap/bquiet_shush_logo"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/bq_icon_round"
+        android:roundIcon="@mipmap/bquiet_shush_logo_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 

@@ -124,6 +124,7 @@ public class InboxService extends Service {
                     notificationManager.notify((new Random()).nextInt(), builder.build());
                     //https://developer.android.com/training/notify-user/build-notification
                 });
+                BQcollection.deleteMany(filterDoc);
             }
         };
         //Starts after 5 sec and will repeat on every 5 sec of time interval.
