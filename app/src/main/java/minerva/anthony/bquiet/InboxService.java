@@ -60,7 +60,7 @@ public class InboxService extends Service {
             }
         });
         Security sec = new Security();
-        Log.v("STITCH", "TESTING: " + sec.decrypt(sec.encrypt("HELLO ANTHONY")));
+        //Log.v("STITCH", "TESTING: " + sec.decrypt(sec.encrypt("HELLO ANTHONY")));
         return START_STICKY;
     }
 

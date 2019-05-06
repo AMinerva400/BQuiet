@@ -65,9 +65,9 @@ public class MessageSender {
         }
         Security encrypter = new Security();
         Document msg = new Document("sendTo", receiver.getUserID())
-                .append("convoUsers", encrypter.encrypt(gson.toJson(convoUsers)))
-                .append("convo", encrypter.encrypt(gson.toJson(c)))
-                .append("message", encrypter.encrypt(gson.toJson(message)));
+                .append("convoUsers", encrypter.encrypt(gson.toJson(convoUsers), receiver.pubKey))
+                .append("convo", encrypter.encrypt(gson.toJson(c), receiver.pubKey))
+                .append("message", encrypter.encrypt(gson.toJson(message), receiver.pubKey));
         if(message.getSender().getUserID().equals("ALERT_EXPIRE")){
             msg.append("expireTime", expirationTime);
         }
@@ -102,9 +102,9 @@ public class MessageSender {
         }
         Security encrypter = new Security();
         Document msg = new Document("sendTo", receiver.getUserID())
-                .append("convoUsers", encrypter.encrypt(gson.toJson(convoUsers)))
-                .append("convo", encrypter.encrypt(gson.toJson(c)))
-                .append("message", encrypter.encrypt(gson.toJson(message)));
+                .append("convoUsers", encrypter.encrypt(gson.toJson(convoUsers), receiver.pubKey))
+                .append("convo", encrypter.encrypt(gson.toJson(c), receiver.pubKey))
+                .append("message", encrypter.encrypt(gson.toJson(message), receiver.pubKey));
         Log.v("STITCH", "Message Sent");
         Task<RemoteInsertOneResult> insertTask = BQcollection.insertOne(msg);
         insertTask.addOnCompleteListener(new OnCompleteListener<RemoteInsertOneResult>() {

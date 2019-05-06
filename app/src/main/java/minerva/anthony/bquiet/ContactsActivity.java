@@ -19,6 +19,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
@@ -27,7 +28,7 @@ import com.google.zxing.common.BitMatrix;
 public class ContactsActivity extends AppCompatActivity
         implements UserDataFragment.UserDataListener {
 
-    private static String UID, Name;
+    private static User user;
     private final static int QRcodeWidth = 500;
     Bitmap bitmap;
     ImageView ivQR;
@@ -40,6 +41,8 @@ public class ContactsActivity extends AppCompatActivity
         SharedPreferences.Editor editor = pref.edit();
         editor.putString("UID", user.getUserID());
         editor.putString("NAME", user.getName());
+        editor.putString("KEY", user.getPublicKey());
+        this.user = user;
         editor.apply();
     }
 
@@ -56,7 +59,8 @@ public class ContactsActivity extends AppCompatActivity
         btnAddContact = findViewById(R.id.btnAddContact);
         mDatabase = new MyDatabase(getApplicationContext());
         try{
-            bitmap = TextToImageEncode(Name + "_" + UID);
+            Gson gson = new Gson();
+            bitmap = TextToImageEncode(gson.toJson(user));
         } catch(WriterException e){
             Log.e("ContactsQRCode", "Error Generating QR Code");
         }
@@ -74,8 +78,8 @@ public class ContactsActivity extends AppCompatActivity
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 0) {
             if (resultCode == RESULT_OK) {
-                String[] content = data.getStringExtra("QRCode").split("_");
-                User u = new User(content[0], content[1]);
+                Gson gson = new Gson();
+                User u = gson.fromJson(data.getStringExtra("QRCode"), User.class);
                 mDatabase.addContact(u);
             }
             if(resultCode == RESULT_CANCELED){
@@ -87,11 +91,17 @@ public class ContactsActivity extends AppCompatActivity
     //Sets the UID
     static void setUID(Context c, FragmentManager fm){
         SharedPreferences sharedPref = c.getSharedPreferences("UserData", 0);
-        UID = sharedPref.getString("UID", "ERROR");
-        Name = sharedPref.getString("NAME", "ERROR");
-        if(UID.equals("ERROR") || Name.equals("ERROR")){ // There is no User Account
+        String UID = sharedPref.getString("UID", "ERROR");
+        String name = sharedPref.getString("NAME", "ERROR");
+        String pubKey = sharedPref.getString("KEY", "ERROR");
+        if(UID.equals("ERROR") || name.equals("ERROR") || pubKey.equals("ERROR")){ // There is no User Account
             UserDataFragment userData = UserDataFragment.newInstance();
             userData.show(fm, "fragment_user_data");
+        }else{
+            user = new User();
+            user.UserID = UID;
+            user.name = name;
+            user.pubKey = pubKey;
         }
     }
     //Convert Text to QR Image

@@ -20,7 +20,8 @@ import java.util.concurrent.TimeUnit;
 public class ChatSettingsActivity extends AppCompatActivity
         implements  UserDataFragment.UserDataListener {
 
-    private static String UID, Name, CID;
+    private static String CID;
+    private static User user;
     private Switch screenshotPrevent;
     private Spinner msgExpire;
     private Button btnExpire;
@@ -33,7 +34,9 @@ public class ChatSettingsActivity extends AppCompatActivity
         SharedPreferences.Editor editor = pref.edit();
         editor.putString("UID", user.getUserID());
         editor.putString("NAME", user.getName());
-        editor.commit();
+        editor.putString("KEY", user.getPublicKey());
+        this.user = user;
+        editor.apply();
     }
 
     @Override
@@ -83,11 +86,17 @@ public class ChatSettingsActivity extends AppCompatActivity
     //Sets the UID
     static void setUID(Context c, FragmentManager fm){
         SharedPreferences sharedPref = c.getSharedPreferences("UserData", 0);
-        UID = sharedPref.getString("UID", "ERROR");
-        Name = sharedPref.getString("NAME", "ERROR");
-        if(UID.equals("ERROR") || Name.equals("ERROR")){ // There is no User Account
+        String UID = sharedPref.getString("UID", "ERROR");
+        String name = sharedPref.getString("NAME", "ERROR");
+        String pubKey = sharedPref.getString("KEY", "ERROR");
+        if(UID.equals("ERROR") || name.equals("ERROR") || pubKey.equals("ERROR")){ // There is no User Account
             UserDataFragment userData = UserDataFragment.newInstance();
             userData.show(fm, "fragment_user_data");
+        }else{
+            user = new User();
+            user.UserID = UID;
+            user.name = name;
+            user.pubKey = pubKey;
         }
     }
 }

@@ -33,13 +33,15 @@ public class MainActivity extends AppCompatActivity
         implements UserDataFragment.UserDataListener, ConversationFragment.ConversationListener{
 
     @Override
-    public void setUserData(User user) {
+    public void setUserData(User u) {
         SharedPreferences pref = getApplicationContext().getSharedPreferences("UserData", 0);
         SharedPreferences.Editor editor = pref.edit();
-        editor.putString("UID", user.getUserID());
-        editor.putString("NAME", user.getName());
-        editor.commit();
-        mDatabase.addContact(new User(Name, UID));
+        editor.putString("UID", u.getUserID());
+        editor.putString("NAME", u.getName());
+        editor.putString("KEY", u.getPublicKey());
+        user = u;
+        editor.apply();
+        startInbox(getApplicationContext());
     }
 
     @Override
@@ -50,7 +52,7 @@ public class MainActivity extends AppCompatActivity
         conversationAdapter.notifyDataSetChanged();
     }
 
-    private static String UID, Name;
+    private static User user = new User();
     List<Conversation> dataSet = new ArrayList<>();
     ConversationAdapter conversationAdapter;
     ListView lvConversations;
@@ -63,14 +65,16 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        //user.UserID = "ERROR";
+        //user.name = "ERROR";
+        //user.pubKey = "ERROR";
         setUID(getApplicationContext(), getSupportFragmentManager());
-        startInbox();
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 FragmentManager fm = getSupportFragmentManager();
-                ConversationFragment conversation = ConversationFragment.newInstance(mDatabase.getContacts(), new User(Name, UID));
+                ConversationFragment conversation = ConversationFragment.newInstance(mDatabase.getContacts(), user);
                 conversation.show(fm, "fragment_conversation");
             }
         });
@@ -84,7 +88,7 @@ public class MainActivity extends AppCompatActivity
         mDatabase = new MyDatabase(getApplicationContext());
         mDatabase.cleanUsers("ERROR");
         dataSet = mDatabase.getConversations();
-        conversationAdapter = new ConversationAdapter(this, dataSet, UID);
+        conversationAdapter = new ConversationAdapter(this, dataSet, user.UserID);
         lvConversations = findViewById(R.id.lvConversationsList);
         lvConversations.setAdapter(conversationAdapter);
         lvConversations.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -101,22 +105,31 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onRefresh() {
                 conversationAdapter.notifyDataSetChanged();
+                if(swipeRefreshLayout.isRefreshing()){
+                    swipeRefreshLayout.setRefreshing(false);
+                }
             }
         });
     }
     //Sets the UID
     static void setUID(Context c, FragmentManager fm){
         SharedPreferences sharedPref = c.getSharedPreferences("UserData", 0);
-        UID = sharedPref.getString("UID", "ERROR");
-        Name = sharedPref.getString("NAME", "ERROR");
-        if(UID.equals("ERROR") || Name.equals("ERROR")){ // There is no User Account
+        String UID = sharedPref.getString("UID", "ERROR");
+        String name = sharedPref.getString("NAME", "ERROR");
+        String pubKey = sharedPref.getString("KEY", "ERROR");
+        if (UID == null || UID.equals("ERROR") || name == null || name.equals("ERROR") || pubKey == null || pubKey.equals("ERROR")) { // There is no User Account
             UserDataFragment userData = UserDataFragment.newInstance();
             userData.show(fm, "fragment_user_data");
+        } else {
+            user.UserID = UID;
+            user.name = name;
+            user.pubKey = pubKey;
+            startInbox(c);
         }
     }
 
-    public void startInbox(){
-        MessageReceiver mReceiver = new MessageReceiver(UID, getApplicationContext());
+    public static void startInbox(Context c){
+        MessageReceiver mReceiver = new MessageReceiver(user.UserID, c);
         mReceiver.checkInbox();
     }
 

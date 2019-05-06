@@ -27,7 +27,9 @@ public class ChatActivity extends AppCompatActivity
         SharedPreferences.Editor editor = pref.edit();
         editor.putString("UID", user.getUserID());
         editor.putString("NAME", user.getName());
-        editor.commit();
+        editor.putString("KEY", user.getPublicKey());
+        this.user = user;
+        editor.apply();
     }
 
     Button btnSend, btnSettings;
@@ -35,7 +37,7 @@ public class ChatActivity extends AppCompatActivity
     private RecyclerView mMessageRecycler;
     private MessageListAdapter mMessageAdapter;
     List<Message> dataSet;
-    private static String UID, Name;
+    private static User user;
     private String[] receiverID;
     private String CID = "";
     private MyDatabase mDatabase;
@@ -52,24 +54,24 @@ public class ChatActivity extends AppCompatActivity
         mMessageRecycler = findViewById(R.id.rvMessageList);
         mDatabase = new MyDatabase(getApplicationContext());
         dataSet = mDatabase.getMessages(CID);
-        mMessageAdapter = new MessageListAdapter(this, dataSet, UID);
+        mMessageAdapter = new MessageListAdapter(this, dataSet, user.UserID);
         LinearLayoutManager llm = new LinearLayoutManager(getApplicationContext());
         llm.setStackFromEnd(true); //Focus on Bottom of Stack
         mMessageRecycler.setLayoutManager(llm);
         mMessageRecycler.setAdapter(mMessageAdapter);
         btnSend = findViewById(R.id.btnSend);
         etChat = findViewById(R.id.etChatbox);
-        MessageSender mSender = new MessageSender(mDatabase, Name);
+        MessageSender mSender = new MessageSender(mDatabase, user.name);
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Message m = new Message(etChat.getText().toString(), new User(Name, UID), System.currentTimeMillis(), CID);
+                Message m = new Message(etChat.getText().toString(), user, System.currentTimeMillis(), CID);
                 mDatabase.addMessage(m);
                 dataSet.add(m);
                 mMessageAdapter.notifyDataSetChanged();
-                for(String user : receiverID){
-                    User u = mDatabase.getUser(user);
-                    if(!user.equals(UID)){
+                for(String sendTo : receiverID){
+                    User u = mDatabase.getUser(sendTo);
+                    if(!sendTo.equals(user.UserID)){
                         mSender.send(m, u);
                     }
                 }
@@ -88,11 +90,17 @@ public class ChatActivity extends AppCompatActivity
     //Sets the UID
     static void setUID(Context c, FragmentManager fm){
         SharedPreferences sharedPref = c.getSharedPreferences("UserData", 0);
-        UID = sharedPref.getString("UID", "ERROR");
-        Name = sharedPref.getString("NAME", "ERROR");
-        if(UID.equals("ERROR") || Name.equals("ERROR")){ // There is no User Account
+        String UID = sharedPref.getString("UID", "ERROR");
+        String name = sharedPref.getString("NAME", "ERROR");
+        String pubKey = sharedPref.getString("KEY", "ERROR");
+        if(UID.equals("ERROR") || name.equals("ERROR") || pubKey.equals("ERROR")){ // There is no User Account
             UserDataFragment userData = UserDataFragment.newInstance();
             userData.show(fm, "fragment_user_data");
+        }else{
+            user = new User();
+            user.UserID = UID;
+            user.name = name;
+            user.pubKey = pubKey;
         }
     }
 }
