@@ -14,6 +14,7 @@ public class User {
     String name;
     @ColumnInfo @PrimaryKey @NonNull
     String UserID;
+    @ColumnInfo
     String pubKey;
 
     public void setName(String name) {

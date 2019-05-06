@@ -41,6 +41,7 @@ import java.security.KeyFactory;
             }
             catch(Exception e){
                 Log.e("ERROR", e.toString());
+                return plainField;
             }
         }
 
@@ -53,15 +54,22 @@ import java.security.KeyFactory;
             }
             catch(Exception e){
                 Log.e("ERROR", e.toString());
+                return encryptedField;
             }
         }
 
         public static String keyGenerator()
         {
-            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-            kpg.initialize(512);
-            KeyPair kpair = kpg.generateKeyPair();
-            privKey = kpair.getPrivate();
-            return Base64.getEncoder().encodeToString(kpair.getPublic().getEncoded());
+            try
+            {
+                KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+                kpg.initialize(512);
+                KeyPair kpair = kpg.generateKeyPair();
+                privKey = kpair.getPrivate();
+                return Base64.getEncoder().encodeToString(kpair.getPublic().getEncoded());
+            }catch(Exception e){
+                Log.e("ERROR", e.toString());
+                return null;
+            }
         }
     }
