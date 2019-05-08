@@ -21,4 +21,7 @@ public interface MessageDao {
 
     @Query("DELETE FROM Message WHERE Message.conversationID = :CID AND :millis - Message.createdAt >= :time")
     void expireMessages(String CID, long millis, long time);
+
+    @Query("DELETE FROM Message WHERE Message.conversationID = :CID")
+    void deleteMessages(String CID);
 }

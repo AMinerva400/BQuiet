@@ -53,7 +53,7 @@ public class MyDatabase {
         }
     }
 
-    void addConversation(final Conversation  c) {
+    void addConversation(final Conversation c) {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -205,6 +205,21 @@ public class MyDatabase {
             @Override
             public void run() {
                 messagesDatabase.messageDao().expireMessages(CID, currentTime, expirationTime);
+            }
+        });
+        try{
+            t.start();
+            t.join();
+        } catch(Exception e){
+            Log.e("MyDatabase", "Error Joining " + e);
+        }
+    }
+
+    void deleteMessages(final String CID){
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                messagesDatabase.messageDao().deleteMessages(CID);
             }
         });
         try{

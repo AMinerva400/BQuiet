@@ -70,61 +70,65 @@ public class InboxService extends Service {
         TimerTask doAsynchronousTask = new TimerTask() {
             @Override
             public void run() {
-                Document filterDoc = new Document().append("sendTo", userID);
-                mongo = stitchClient.getServiceClient(RemoteMongoClient.factory, "mongodb-atlas");
-                BQcollection = mongo.getDatabase("UserMessages").getCollection("Message");
-                Log.v("STITCH", "Running Inbox Loop");
-                RemoteFindIterable findResults = BQcollection.find(filterDoc);
-                findResults.forEach(item -> {
-                    Document doc = (Document) item;
-                    Log.v("STITCH", "Message Received!");
-                    Gson gson = new Gson();
-                    Security decrypter = new Security();
-                    ArrayList cUsers = gson.fromJson(decrypter.decrypt(doc.get("convoUsers").toString()), ArrayList.class);
-                    Log.v("STITCH", cUsers.toString());
-                    for(Object obj : cUsers){
-                        User u = gson.fromJson(obj.toString(), User.class);
-                        if(!u.getUserID().equals(userID)){
-                            Log.v("STITCH", "User Found! " + u.getName());
-                            myDatabase.addContact(u);
+                try{
+                    Document filterDoc = new Document().append("sendTo", userID);
+                    mongo = stitchClient.getServiceClient(RemoteMongoClient.factory, "mongodb-atlas");
+                    BQcollection = mongo.getDatabase("UserMessages").getCollection("Message");
+                    Log.v("STITCH", "Running Inbox Loop");
+                    RemoteFindIterable findResults = BQcollection.find(filterDoc);
+                    findResults.forEach(item -> {
+                        Document doc = (Document) item;
+                        Log.v("STITCH", "Message Received!");
+                        Gson gson = new Gson();
+                        Security decrypter = new Security();
+                        ArrayList cUsers = gson.fromJson(decrypter.decrypt(doc.get("convoUsers").toString()), ArrayList.class);
+                        Log.v("STITCH", cUsers.toString());
+                        for(Object obj : cUsers){
+                            User u = gson.fromJson(obj.toString(), User.class);
+                            if(!u.getUserID().equals(userID)){
+                                Log.v("STITCH", "User Found! " + u.getName());
+                                myDatabase.addContact(u);
+                            }
                         }
-                    }
-                    Log.v("STITCH", "Reached this line");
-                    Conversation c = gson.fromJson(decrypter.decrypt(doc.get("convo").toString()), Conversation.class);
-                    Log.v("STITCH", "Convo Found! " + c.getGroupName());
-                    myDatabase.addConversation(c);
-                    Message m = gson.fromJson(decrypter.decrypt(doc.get("message").toString()), Message.class);
-                    Log.v("STITCH", "Convo Found! " + m.getMessage());
-                    Log.v("STITCH", "Reached this line");
-                    myDatabase.addMessage(m);
-                    if(m.getSender().UserID.equals("ALERT_EXPIRE")){
+                        Log.v("STITCH", "Reached this line");
+                        Conversation c = gson.fromJson(decrypter.decrypt(doc.get("convo").toString()), Conversation.class);
+                        Log.v("STITCH", "Convo Found! " + c.getGroupName());
+                        myDatabase.addConversation(c);
+                        Message m = gson.fromJson(decrypter.decrypt(doc.get("message").toString()), Message.class);
+                        Log.v("STITCH", "Convo Found! " + m.getMessage());
+                        Log.v("STITCH", "Reached this line");
+                        myDatabase.addMessage(m);
+                        if(m.getSender().UserID.equals("ALERT_EXPIRE")){
 
-                        Intent i = new Intent(getApplicationContext(), MessageExpirationService.class);
-                        i.putExtra("EXPIRE_TIME", (long)doc.get("expireTime"));
-                        i.putExtra("CID", m.conversationID);
-                        stopService(i);
-                        if((long)doc.get("expireTime") != -1){
-                            startService(i);
+                            Intent i = new Intent(getApplicationContext(), MessageExpirationService.class);
+                            i.putExtra("EXPIRE_TIME", (long)doc.get("expireTime"));
+                            i.putExtra("CID", m.conversationID);
+                            stopService(i);
+                            if((long)doc.get("expireTime") != -1){
+                                startService(i);
+                            }
+                            Log.v("STITCH", "Starting Expire Service");
                         }
-                        Log.v("STITCH", "Starting Expire Service");
-                    }
-                    createNotificationChannel();
-                    Intent i = new Intent(getApplicationContext(), ChatActivity.class);
-                    i.putExtra("rID", c.getReceivers());
-                    i.putExtra("CID", c.getCID());
-                    PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, i, 0);
-                    NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
-                            .setSmallIcon(R.drawable.ic_stat_name)
-                            .setContentTitle("Message Received!")
-                            .setContentText(m.getSender().getName() + ": " + m.getMessage())
-                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                            .setContentIntent(pendingIntent)
-                            .setAutoCancel(true);
-                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
-                    notificationManager.notify((new Random()).nextInt(), builder.build());
-                    //https://developer.android.com/training/notify-user/build-notification
-                });
-                BQcollection.deleteMany(filterDoc);
+                        createNotificationChannel();
+                        Intent i = new Intent(getApplicationContext(), ChatActivity.class);
+                        i.putExtra("rID", c.getReceivers());
+                        i.putExtra("CID", c.getCID());
+                        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, i, 0);
+                        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
+                                .setSmallIcon(R.drawable.ic_stat_name)
+                                .setContentTitle("Message Received!")
+                                .setContentText(m.getSender().getName() + ": " + m.getMessage())
+                                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                .setContentIntent(pendingIntent)
+                                .setAutoCancel(true);
+                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
+                        notificationManager.notify((new Random()).nextInt(), builder.build());
+                        //https://developer.android.com/training/notify-user/build-notification
+                    });
+                    BQcollection.deleteMany(filterDoc);
+                }catch(Exception e){
+                    Log.v("INBOX", "Error: " + e.toString());
+                }
             }
         };
         //Starts after 5 sec and will repeat on every 5 sec of time interval.

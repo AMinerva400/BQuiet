@@ -61,6 +61,7 @@ public class ChatActivity extends AppCompatActivity
         mMessageRecycler.setAdapter(mMessageAdapter);
         btnSend = findViewById(R.id.btnSend);
         etChat = findViewById(R.id.etChatbox);
+        setTitle(mDatabase.getConversation(CID).getGroupName());
         MessageSender mSender = new MessageSender(mDatabase, user.name);
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,6 +76,7 @@ public class ChatActivity extends AppCompatActivity
                         mSender.send(m, u);
                     }
                 }
+                etChat.setText("");
             }
         });
         btnSettings = findViewById(R.id.btnSettings);

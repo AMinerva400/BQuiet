@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
@@ -63,11 +64,6 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        //user.UserID = "ERROR";
-        //user.name = "ERROR";
-        //user.pubKey = "ERROR";
         setUID(getApplicationContext(), getSupportFragmentManager());
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -98,6 +94,17 @@ public class MainActivity extends AppCompatActivity
                 i.putExtra("rID", dataSet.get(position).getReceivers());
                 i.putExtra("CID", dataSet.get(position).getCID());
                 startActivity(i);
+            }
+        });
+        lvConversations.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                String CID = dataSet.get(position).getCID();
+                mDatabase.deleteMessages(CID);
+                mDatabase.deleteConversation(dataSet.get(position));
+                dataSet.remove(position);
+                conversationAdapter.notifyDataSetChanged();
+                return true;
             }
         });
         swipeRefreshLayout = findViewById(R.id.swipeRefresh);
